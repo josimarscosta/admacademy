@@ -1,6 +1,12 @@
 import streamlit as st
 import json
 import os
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+import requests
+from io import BytesIO
+import base64
 from datetime import datetime
 
 # Configuração da página
@@ -18,8 +24,65 @@ if "user" not in st.session_state:
     st.session_state.user = None
 if "current_page" not in st.session_state:
     st.session_state.current_page = "login"
+if "data_source" not in st.session_state:
+    st.session_state.data_source = "local"  # Opções: local, github, cloud
 
-# Função para carregar dados simulados
+# Configurações para fontes de dados
+GITHUB_REPO = "seu-usuario/adm-academy"  # Substitua pelo seu repositório
+GITHUB_BRANCH = "main"
+CLOUD_STORAGE_TYPE = "gdrive"  # Opções: gdrive, dropbox, s3
+
+# Função para carregar dados do GitHub
+def load_data_from_github(file_path):
+    try:
+        url = f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{file_path}"
+        response = requests.get(url)
+        response.raise_for_status()  # Verifica se a requisição foi bem-sucedida
+        
+        if file_path.endswith('.json'):
+            return json.loads(response.text)
+        elif file_path.endswith('.csv'):
+            return pd.read_csv(BytesIO(response.content))
+        elif file_path.endswith('.xlsx'):
+            return pd.read_excel(BytesIO(response.content))
+        else:
+            return response.text
+    except Exception as e:
+        st.error(f"Erro ao carregar dados do GitHub: {e}")
+        return None
+
+# Função para carregar dados de serviços de armazenamento em nuvem
+def load_data_from_cloud(file_path, service_type="gdrive"):
+    try:
+        # Implementação para Google Drive
+        if service_type == "gdrive":
+            # Aqui você precisaria implementar a autenticação com o Google Drive
+            # e a lógica para buscar o arquivo
+            st.warning("Conexão com Google Drive configurada, mas requer autenticação.")
+            return None
+            
+        # Implementação para Dropbox
+        elif service_type == "dropbox":
+            # Aqui você precisaria implementar a autenticação com o Dropbox
+            # e a lógica para buscar o arquivo
+            st.warning("Conexão com Dropbox configurada, mas requer autenticação.")
+            return None
+            
+        # Implementação para Amazon S3
+        elif service_type == "s3":
+            # Aqui você precisaria implementar a autenticação com a AWS
+            # e a lógica para buscar o arquivo do S3
+            st.warning("Conexão com Amazon S3 configurada, mas requer autenticação.")
+            return None
+            
+        else:
+            st.error(f"Serviço de armazenamento não suportado: {service_type}")
+            return None
+    except Exception as e:
+        st.error(f"Erro ao carregar dados da nuvem: {e}")
+        return None
+
+# Função para carregar dados simulados localmente
 def load_mock_data():
     # Criar diretório de dados se não existir
     os.makedirs("data", exist_ok=True)
@@ -248,13 +311,40 @@ def load_mock_data():
         with open("data/achievements.json", "w") as f:
             json.dump(achievements, f)
 
-# Carregar dados simulados
-load_mock_data()
+# Função para carregar dados com base na fonte selecionada
+def load_data(file_name, data_source=None):
+    if data_source is None:
+        data_source = st.session_state.data_source
+        
+    if data_source == "local":
+        # Carregar dados locais
+        load_mock_data()  # Garante que os dados existam
+        file_path = f"data/{file_name}"
+        if os.path.exists(file_path):
+            with open(file_path, "r") as f:
+                return json.load(f)
+        else:
+            st.error(f"Arquivo não encontrado: {file_path}")
+            return None
+            
+    elif data_source == "github":
+        # Carregar dados do GitHub
+        return load_data_from_github(f"data/{file_name}")
+        
+    elif data_source == "cloud":
+        # Carregar dados da nuvem
+        return load_data_from_cloud(file_name, CLOUD_STORAGE_TYPE)
+        
+    else:
+        st.error(f"Fonte de dados não suportada: {data_source}")
+        return None
 
 # Função para autenticação
 def authenticate(email, password):
-    with open("data/users.json", "r") as f:
-        users = json.load(f)
+    users = load_data("users.json")
+    if not users:
+        st.error("Não foi possível carregar os dados de usuários.")
+        return False
     
     for user in users:
         if user["email"] == email and user["password"] == password:
@@ -356,6 +446,12 @@ def local_css():
         .stButton>button:hover {
             background-color: #3B82F6;
         }
+        .data-source-selector {
+            padding: 10px;
+            background-color: #F3F4F6;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
     </style>
     """, unsafe_allow_html=True)
 
@@ -367,6 +463,50 @@ if st.session_state.authenticated:
     with st.sidebar:
         st.image("https://www.unifor.br/documents/20143/3597199/logo-unifor-azul.png", width=200)
         st.title(f"Olá, {st.session_state.user['name']}")
+        
+        # Seletor de fonte de dados (apenas para administradores)
+        if st.session_state.user.get('role') == 'coordinator':
+            st.markdown("### Configurações")
+            st.markdown("<div class='data-source-selector'>", unsafe_allow_html=True)
+            st.markdown("#### Fonte de Dados")
+            data_source = st.radio(
+                "Selecione a fonte de dados:",
+                ["Local", "GitHub", "Nuvem"],
+                index=0,
+                key="data_source_radio"
+            )
+            
+            # Atualizar fonte de dados com base na seleção
+            if data_source == "Local":
+                st.session_state.data_source = "local"
+            elif data_source == "GitHub":
+                st.session_state.data_source = "github"
+                # Campos para configuração do GitHub
+                github_repo = st.text_input("Repositório GitHub (usuário/repo):", GITHUB_REPO)
+                github_branch = st.text_input("Branch:", GITHUB_BRANCH)
+                if st.button("Salvar Configurações GitHub"):
+                    GITHUB_REPO = github_repo
+                    GITHUB_BRANCH = github_branch
+                    st.success("Configurações do GitHub atualizadas!")
+            elif data_source == "Nuvem":
+                st.session_state.data_source = "cloud"
+                # Campos para configuração do serviço de nuvem
+                cloud_service = st.selectbox(
+                    "Serviço de Armazenamento:",
+                    ["Google Drive", "Dropbox", "Amazon S3"],
+                    index=0
+                )
+                if st.button("Configurar Serviço de Nuvem"):
+                    if cloud_service == "Google Drive":
+                        CLOUD_STORAGE_TYPE = "gdrive"
+                    elif cloud_service == "Dropbox":
+                        CLOUD_STORAGE_TYPE = "dropbox"
+                    elif cloud_service == "Amazon S3":
+                        CLOUD_STORAGE_TYPE = "s3"
+                    st.success(f"Configuração de {cloud_service} iniciada!")
+                    st.info("Para completar a configuração, é necessário autenticar com o serviço.")
+            
+            st.markdown("</div>", unsafe_allow_html=True)
         
         st.markdown("### Menu")
         if st.button("Dashboard"):
@@ -474,14 +614,15 @@ elif st.session_state.current_page == "dashboard":
         st.markdown("#### Trilhas de Aprendizado")
         
         # Carregar trilhas
-        with open("data/trails.json", "r") as f:
-            trails = json.load(f)
-        
-        for trail in trails:
-            st.markdown(f"<div class='progress-container'>", unsafe_allow_html=True)
-            st.markdown(f"<p>{trail['title']}</p>", unsafe_allow_html=True)
-            st.progress(trail['progress'] / 100)
-            st.markdown(f"</div>", unsafe_allow_html=True)
+        trails = load_data("trails.json")
+        if trails:
+            for trail in trails:
+                st.markdown(f"<div class='progress-container'>", unsafe_allow_html=True)
+                st.markdown(f"<p>{trail['title']}</p>", unsafe_allow_html=True)
+                st.progress(trail['progress'] / 100)
+                st.markdown(f"</div>", unsafe_allow_html=True)
+        else:
+            st.warning("Não foi possível carregar os dados das trilhas.")
         
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -490,31 +631,29 @@ elif st.session_state.current_page == "dashboard":
         st.markdown("#### Desempenho em Simulados")
         
         # Carregar simulados
-        with open("data/simulations.json", "r") as f:
-            simulations = json.load(f)
-        
-        # Filtrar apenas simulados completados
-        completed_simulations = [sim for sim in simulations if sim['completed']]
-        
-        # Criar dados para o gráfico
-        import plotly.express as px
-        import pandas as pd
-        
-        if completed_simulations:
-            df = pd.DataFrame(completed_simulations)
-            fig = px.bar(
-                df, 
-                x='title', 
-                y='score',
-                labels={'title': 'Simulado', 'score': 'Pontuação (%)'},
-                color='score',
-                color_continuous_scale=px.colors.sequential.Blues,
-                range_y=[0, 100]
-            )
-            fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
+        simulations = load_data("simulations.json")
+        if simulations:
+            # Filtrar apenas simulados completados
+            completed_simulations = [sim for sim in simulations if sim['completed']]
+            
+            # Criar dados para o gráfico
+            if completed_simulations:
+                df = pd.DataFrame(completed_simulations)
+                fig = px.bar(
+                    df, 
+                    x='title', 
+                    y='score',
+                    labels={'title': 'Simulado', 'score': 'Pontuação (%)'},
+                    color='score',
+                    color_continuous_scale=px.colors.sequential.Blues,
+                    range_y=[0, 100]
+                )
+                fig.update_layout(height=300)
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("Nenhum simulado completado ainda.")
         else:
-            st.info("Nenhum simulado completado ainda.")
+            st.warning("Não foi possível carregar os dados dos simulados.")
         
         st.markdown("</div>", unsafe_allow_html=True)
     
@@ -522,334 +661,329 @@ elif st.session_state.current_page == "dashboard":
     st.markdown("### Conquistas Recentes")
     
     # Carregar conquistas
-    with open("data/achievements.json", "r") as f:
-        achievements = json.load(f)
-    
-    # Filtrar conquistas desbloqueadas
-    unlocked_achievements = [ach for ach in achievements if ach['unlocked']]
-    
-    if unlocked_achievements:
-        for achievement in unlocked_achievements:
-            st.markdown(f"""
-            <div class='achievement-card'>
-                <div class='achievement-icon'>{achievement['icon']}</div>
-                <div><strong>{achievement['title']}</strong></div>
-                <div style='font-size: 0.8rem;'>{achievement['description']}</div>
-            </div>
-            """, unsafe_allow_html=True)
+    achievements = load_data("achievements.json")
+    if achievements:
+        # Filtrar conquistas desbloqueadas
+        unlocked_achievements = [ach for ach in achievements if ach['unlocked']]
+        
+        if unlocked_achievements:
+            for achievement in unlocked_achievements:
+                st.markdown(f"""
+                <div class='achievement-card'>
+                    <div class='achievement-icon'>{achievement['icon']}</div>
+                    <div><strong>{achievement['title']}</strong></div>
+                    <div style='font-size: 0.8rem;'>{achievement['description']}</div>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            st.info("Nenhuma conquista desbloqueada ainda.")
     else:
-        st.info("Nenhuma conquista desbloqueada ainda.")
+        st.warning("Não foi possível carregar os dados das conquistas.")
 
 # Página de Trilhas de Aprendizado
 elif st.session_state.current_page == "trails":
     st.markdown("<h1 class='main-header'>Trilhas de Aprendizado</h1>", unsafe_allow_html=True)
     
     # Carregar trilhas
-    with open("data/trails.json", "r") as f:
-        trails = json.load(f)
-    
-    # Exibir trilhas em grid
-    col1, col2 = st.columns(2)
-    
-    for i, trail in enumerate(trails):
-        with col1 if i % 2 == 0 else col2:
-            st.markdown(f"""
-            <div class='card trail-card'>
-                <div class='trail-icon'>{trail['image']}</div>
-                <h3>{trail['title']}</h3>
-                <p>{trail['description']}</p>
-                <div class='progress-container'>
-                    <div>Progresso: {trail['progress']}%</div>
-                    <div style='margin-top: 5px;'></div>
+    trails = load_data("trails.json")
+    if not trails:
+        st.warning("Não foi possível carregar os dados das trilhas.")
+    else:
+        # Exibir trilhas em grid
+        col1, col2 = st.columns(2)
+        
+        for i, trail in enumerate(trails):
+            with col1 if i % 2 == 0 else col2:
+                st.markdown(f"""
+                <div class='card trail-card'>
+                    <div class='trail-icon'>{trail['image']}</div>
+                    <h3>{trail['title']}</h3>
+                    <p>{trail['description']}</p>
+                    <div class='progress-container'>
+                        <div>Progresso: {trail['progress']}%</div>
+                        <div style='margin-top: 5px;'></div>
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-            st.progress(trail['progress'] / 100)
-            
-            # Botões de ação
-            col_a, col_b = st.columns(2)
-            with col_a:
-                st.button(f"Continuar", key=f"continue_{trail['id']}")
-            with col_b:
-                st.button(f"Detalhes", key=f"details_{trail['id']}")
+                """, unsafe_allow_html=True)
+                st.progress(trail['progress'] / 100)
+                
+                # Botões de ação
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.button(f"Continuar", key=f"continue_{trail['id']}")
+                with col_b:
+                    st.button(f"Detalhes", key=f"details_{trail['id']}")
 
 # Página de Simulados
 elif st.session_state.current_page == "simulations":
     st.markdown("<h1 class='main-header'>Simulados</h1>", unsafe_allow_html=True)
     
     # Carregar simulados
-    with open("data/simulations.json", "r") as f:
-        simulations = json.load(f)
-    
-    # Separar simulados completados e pendentes
-    completed_simulations = [sim for sim in simulations if sim['completed']]
-    pending_simulations = [sim for sim in simulations if not sim['completed']]
-    
-    # Simulados pendentes
-    st.markdown("### Simulados Disponíveis")
-    
-    if pending_simulations:
-        col1, col2 = st.columns(2)
+    simulations = load_data("simulations.json")
+    if not simulations:
+        st.warning("Não foi possível carregar os dados dos simulados.")
+    else:
+        # Separar simulados completados e pendentes
+        completed_simulations = [sim for sim in simulations if sim['completed']]
+        pending_simulations = [sim for sim in simulations if not sim['completed']]
         
-        for i, simulation in enumerate(pending_simulations):
-            with col1 if i % 2 == 0 else col2:
+        # Simulados pendentes
+        st.markdown("### Simulados Disponíveis")
+        
+        if pending_simulations:
+            col1, col2 = st.columns(2)
+            
+            for i, simulation in enumerate(pending_simulations):
+                with col1 if i % 2 == 0 else col2:
+                    st.markdown(f"""
+                    <div class='card simulation-card'>
+                        <h3>{simulation['title']}</h3>
+                        <p>{simulation['description']}</p>
+                        <p><strong>Questões:</strong> {simulation['questions_count']}</p>
+                        <p><strong>Tempo:</strong> {simulation['time_limit']} minutos</p>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    st.button(f"Iniciar Simulado", key=f"start_{simulation['id']}")
+        else:
+            st.info("Não há simulados pendentes.")
+        
+        # Simulados completados
+        st.markdown("### Histórico de Simulados")
+        
+        if completed_simulations:
+            # Criar dados para o gráfico
+            df = pd.DataFrame(completed_simulations)
+            
+            # Gráfico de desempenho
+            fig = px.line(
+                df, 
+                x='title', 
+                y='score',
+                markers=True,
+                labels={'title': 'Simulado', 'score': 'Pontuação (%)'},
+                color_discrete_sequence=['#1E40AF']
+            )
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # Lista de simulados completados
+            for simulation in completed_simulations:
                 st.markdown(f"""
-                <div class='card simulation-card'>
+                <div class='card'>
                     <h3>{simulation['title']}</h3>
                     <p>{simulation['description']}</p>
+                    <p><strong>Pontuação:</strong> {simulation['score']}%</p>
                     <p><strong>Questões:</strong> {simulation['questions_count']}</p>
                     <p><strong>Tempo:</strong> {simulation['time_limit']} minutos</p>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.button(f"Iniciar Simulado", key=f"start_{simulation['id']}")
-    else:
-        st.info("Não há simulados pendentes.")
-    
-    # Simulados completados
-    st.markdown("### Histórico de Simulados")
-    
-    if completed_simulations:
-        # Criar dados para o gráfico
-        import plotly.express as px
-        import pandas as pd
-        
-        df = pd.DataFrame(completed_simulations)
-        
-        # Gráfico de desempenho
-        fig = px.line(
-            df, 
-            x='title', 
-            y='score',
-            markers=True,
-            labels={'title': 'Simulado', 'score': 'Pontuação (%)'},
-            color_discrete_sequence=['#1E40AF']
-        )
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Lista de simulados completados
-        for simulation in completed_simulations:
-            st.markdown(f"""
-            <div class='card'>
-                <h3>{simulation['title']}</h3>
-                <p>{simulation['description']}</p>
-                <p><strong>Pontuação:</strong> {simulation['score']}%</p>
-                <p><strong>Questões:</strong> {simulation['questions_count']}</p>
-                <p><strong>Tempo:</strong> {simulation['time_limit']} minutos</p>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            col_a, col_b = st.columns(2)
-            with col_a:
-                st.button(f"Ver Detalhes", key=f"details_sim_{simulation['id']}")
-            with col_b:
-                st.button(f"Refazer", key=f"redo_{simulation['id']}")
-    else:
-        st.info("Nenhum simulado completado ainda.")
+                col_a, col_b = st.columns(2)
+                with col_a:
+                    st.button(f"Ver Detalhes", key=f"details_sim_{simulation['id']}")
+                with col_b:
+                    st.button(f"Refazer", key=f"redo_{simulation['id']}")
+        else:
+            st.info("Nenhum simulado completado ainda.")
 
 # Página de Analytics
 elif st.session_state.current_page == "analytics":
     st.markdown("<h1 class='main-header'>Analytics Educacional</h1>", unsafe_allow_html=True)
     
     # Carregar dados
-    with open("data/simulations.json", "r") as f:
-        simulations = json.load(f)
+    simulations = load_data("simulations.json")
+    trails = load_data("trails.json")
     
-    with open("data/trails.json", "r") as f:
-        trails = json.load(f)
-    
-    # Filtrar simulados completados
-    completed_simulations = [sim for sim in simulations if sim['completed']]
-    
-    # Análise de desempenho
-    st.markdown("### Análise de Desempenho")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
+    if not simulations or not trails:
+        st.warning("Não foi possível carregar todos os dados necessários para análise.")
+    else:
+        # Filtrar simulados completados
+        completed_simulations = [sim for sim in simulations if sim['completed']]
+        
+        # Análise de desempenho
+        st.markdown("### Análise de Desempenho")
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("#### Desempenho por Área")
+            
+            # Dados simulados de desempenho por área
+            areas = {
+                "Formação Geral": 80,
+                "Administração Estratégica": 73,
+                "Finanças": 92,
+                "Marketing": 65,
+                "Gestão de Pessoas": 70
+            }
+            
+            # Criar gráfico de radar
+            # Preparar dados para o gráfico radar
+            categories = list(areas.keys())
+            values = list(areas.values())
+            
+            fig = go.Figure()
+            
+            fig.add_trace(go.Scatterpolar(
+                r=values,
+                theta=categories,
+                fill='toself',
+                name='Seu desempenho',
+                line_color='#1E40AF'
+            ))
+            
+            fig.add_trace(go.Scatterpolar(
+                r=[75, 75, 75, 75, 75],
+                theta=categories,
+                fill='toself',
+                name='Média da turma',
+                line_color='#F59E0B',
+                opacity=0.5
+            ))
+            
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100]
+                    )
+                ),
+                showlegend=True,
+                height=400
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("<div class='card'>", unsafe_allow_html=True)
+            st.markdown("#### Evolução de Desempenho")
+            
+            # Dados simulados de evolução
+            dates = ["2025-05-01", "2025-05-08", "2025-05-15", "2025-05-22", "2025-05-29"]
+            scores = [65, 70, 75, 78, 82]
+            
+            # Criar gráfico de linha
+            df = pd.DataFrame({
+                "Data": dates,
+                "Pontuação": scores
+            })
+            
+            fig = px.line(
+                df, 
+                x="Data", 
+                y="Pontuação",
+                markers=True,
+                labels={"Pontuação": "Pontuação (%)", "Data": "Data"},
+                color_discrete_sequence=['#1E40AF']
+            )
+            
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Previsão de desempenho
+        st.markdown("### Previsão de Desempenho no ENADE")
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
+            st.markdown("<h4>Previsão Atual</h4>", unsafe_allow_html=True)
+            st.markdown("<div class='metric-value'>78%</div>", unsafe_allow_html=True)
+            st.markdown("<div>Baseado no seu desempenho atual</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col2:
+            st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
+            st.markdown("<h4>Potencial</h4>", unsafe_allow_html=True)
+            st.markdown("<div class='metric-value'>85%</div>", unsafe_allow_html=True)
+            st.markdown("<div>Se completar todas as trilhas recomendadas</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
+            st.markdown("<h4>Média da Turma</h4>", unsafe_allow_html=True)
+            st.markdown("<div class='metric-value'>75%</div>", unsafe_allow_html=True)
+            st.markdown("<div>Baseado no desempenho coletivo</div>", unsafe_allow_html=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+        # Recomendações personalizadas
+        st.markdown("### Recomendações Personalizadas")
+        
         st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("#### Desempenho por Área")
+        st.markdown("""
+        <h4>Para melhorar seu desempenho:</h4>
+        <ul>
+            <li><strong>Foco em Marketing:</strong> Esta é sua área com menor pontuação (65%). Recomendamos completar a trilha de Marketing.</li>
+            <li><strong>Praticar mais simulados:</strong> Seus resultados melhoram consistentemente com a prática.</li>
+            <li><strong>Revisar Gestão de Pessoas:</strong> Esta área tem potencial para melhoria significativa.</li>
+        </ul>
+        """, unsafe_allow_html=True)
         
-        # Dados simulados de desempenho por área
-        areas = {
-            "Formação Geral": 80,
-            "Administração Estratégica": 73,
-            "Finanças": 92,
-            "Marketing": 65,
-            "Gestão de Pessoas": 70
-        }
-        
-        # Criar gráfico de radar
-        import plotly.graph_objects as go
-        import pandas as pd
-        import numpy as np
-        
-        # Preparar dados para o gráfico radar
-        categories = list(areas.keys())
-        values = list(areas.values())
-        
-        fig = go.Figure()
-        
-        fig.add_trace(go.Scatterpolar(
-            r=values,
-            theta=categories,
-            fill='toself',
-            name='Seu desempenho',
-            line_color='#1E40AF'
-        ))
-        
-        fig.add_trace(go.Scatterpolar(
-            r=[75, 75, 75, 75, 75],
-            theta=categories,
-            fill='toself',
-            name='Média da turma',
-            line_color='#F59E0B',
-            opacity=0.5
-        ))
-        
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[0, 100]
-                )
-            ),
-            showlegend=True,
-            height=400
-        )
-        
-        st.plotly_chart(fig, use_container_width=True)
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.button("Ver Trilha de Marketing")
+        with col_b:
+            st.button("Iniciar Simulado Recomendado")
         
         st.markdown("</div>", unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-        st.markdown("#### Evolução de Desempenho")
-        
-        # Dados simulados de evolução
-        dates = ["2025-05-01", "2025-05-08", "2025-05-15", "2025-05-22", "2025-05-29"]
-        scores = [65, 70, 75, 78, 82]
-        
-        # Criar gráfico de linha
-        import plotly.express as px
-        
-        df = pd.DataFrame({
-            "Data": dates,
-            "Pontuação": scores
-        })
-        
-        fig = px.line(
-            df, 
-            x="Data", 
-            y="Pontuação",
-            markers=True,
-            labels={"Pontuação": "Pontuação (%)", "Data": "Data"},
-            color_discrete_sequence=['#1E40AF']
-        )
-        
-        fig.update_layout(height=400)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Previsão de desempenho
-    st.markdown("### Previsão de Desempenho no ENADE")
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
-        st.markdown("<h4>Previsão Atual</h4>", unsafe_allow_html=True)
-        st.markdown("<div class='metric-value'>78%</div>", unsafe_allow_html=True)
-        st.markdown("<div>Baseado no seu desempenho atual</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    with col2:
-        st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
-        st.markdown("<h4>Potencial</h4>", unsafe_allow_html=True)
-        st.markdown("<div class='metric-value'>85%</div>", unsafe_allow_html=True)
-        st.markdown("<div>Se completar todas as trilhas recomendadas</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    with col3:
-        st.markdown("<div class='card' style='text-align: center;'>", unsafe_allow_html=True)
-        st.markdown("<h4>Média da Turma</h4>", unsafe_allow_html=True)
-        st.markdown("<div class='metric-value'>75%</div>", unsafe_allow_html=True)
-        st.markdown("<div>Baseado no desempenho coletivo</div>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Recomendações personalizadas
-    st.markdown("### Recomendações Personalizadas")
-    
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    st.markdown("""
-    <h4>Para melhorar seu desempenho:</h4>
-    <ul>
-        <li><strong>Foco em Marketing:</strong> Esta é sua área com menor pontuação (65%). Recomendamos completar a trilha de Marketing.</li>
-        <li><strong>Praticar mais simulados:</strong> Seus resultados melhoram consistentemente com a prática.</li>
-        <li><strong>Revisar Gestão de Pessoas:</strong> Esta área tem potencial para melhoria significativa.</li>
-    </ul>
-    """, unsafe_allow_html=True)
-    
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.button("Ver Trilha de Marketing")
-    with col_b:
-        st.button("Iniciar Simulado Recomendado")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # Página de Conquistas
 elif st.session_state.current_page == "achievements":
     st.markdown("<h1 class='main-header'>Conquistas</h1>", unsafe_allow_html=True)
     
     # Carregar conquistas
-    with open("data/achievements.json", "r") as f:
-        achievements = json.load(f)
-    
-    # Estatísticas de conquistas
-    unlocked_count = len([ach for ach in achievements if ach['unlocked']])
-    total_count = len(achievements)
-    
-    st.markdown(f"### Progresso: {unlocked_count}/{total_count} conquistas desbloqueadas")
-    st.progress(unlocked_count / total_count)
-    
-    # Exibir todas as conquistas
-    st.markdown("### Todas as Conquistas")
-    
-    for achievement in achievements:
-        locked_class = "" if achievement['unlocked'] else "achievement-locked"
-        unlocked_date = f"Desbloqueado em: {achievement['date_unlocked']}" if achievement['unlocked'] else "Bloqueado"
+    achievements = load_data("achievements.json")
+    if not achievements:
+        st.warning("Não foi possível carregar os dados das conquistas.")
+    else:
+        # Estatísticas de conquistas
+        unlocked_count = len([ach for ach in achievements if ach['unlocked']])
+        total_count = len(achievements)
         
-        st.markdown(f"""
-        <div class='achievement-card {locked_class}'>
-            <div class='achievement-icon'>{achievement['icon']}</div>
-            <div><strong>{achievement['title']}</strong></div>
-            <div style='font-size: 0.8rem;'>{achievement['description']}</div>
-            <div style='font-size: 0.7rem; margin-top: 5px;'>{unlocked_date}</div>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    # Próximas conquistas a desbloquear
-    locked_achievements = [ach for ach in achievements if not ach['unlocked']]
-    
-    if locked_achievements:
-        st.markdown("### Próximas Conquistas")
+        st.markdown(f"### Progresso: {unlocked_count}/{total_count} conquistas desbloqueadas")
+        st.progress(unlocked_count / total_count)
         
-        for achievement in locked_achievements:
+        # Exibir todas as conquistas
+        st.markdown("### Todas as Conquistas")
+        
+        for achievement in achievements:
+            locked_class = "" if achievement['unlocked'] else "achievement-locked"
+            unlocked_date = f"Desbloqueado em: {achievement['date_unlocked']}" if achievement['unlocked'] else "Bloqueado"
+            
             st.markdown(f"""
-            <div class='card'>
-                <h4>{achievement['title']} {achievement['icon']}</h4>
-                <p>{achievement['description']}</p>
-                <div style='margin-top: 10px;'>
-                    <strong>Como desbloquear:</strong>
-                    <ul>
-                        <li>{"Obtenha 100% em qualquer simulado" if achievement['title'] == "Nota Máxima" else "Complete todas as trilhas de aprendizado"}</li>
-                    </ul>
-                </div>
+            <div class='achievement-card {locked_class}'>
+                <div class='achievement-icon'>{achievement['icon']}</div>
+                <div><strong>{achievement['title']}</strong></div>
+                <div style='font-size: 0.8rem;'>{achievement['description']}</div>
+                <div style='font-size: 0.7rem; margin-top: 5px;'>{unlocked_date}</div>
             </div>
             """, unsafe_allow_html=True)
+        
+        # Próximas conquistas a desbloquear
+        locked_achievements = [ach for ach in achievements if not ach['unlocked']]
+        
+        if locked_achievements:
+            st.markdown("### Próximas Conquistas")
+            
+            for achievement in locked_achievements:
+                st.markdown(f"""
+                <div class='card'>
+                    <h4>{achievement['title']} {achievement['icon']}</h4>
+                    <p>{achievement['description']}</p>
+                    <div style='margin-top: 10px;'>
+                        <strong>Como desbloquear:</strong>
+                        <ul>
+                            <li>{"Obtenha 100% em qualquer simulado" if achievement['title'] == "Nota Máxima" else "Complete todas as trilhas de aprendizado"}</li>
+                        </ul>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
 
 # Rodapé
 if st.session_state.authenticated:
