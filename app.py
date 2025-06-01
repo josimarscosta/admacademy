@@ -46,14 +46,28 @@ def load_mock_data():
                 "name": "Professor Teste",
                 "email": "professor@unifor.br",
                 "password": "senha123",
-                "role": "teacher"
+                "role": "teacher",
+                "progress": {
+                    "trails_completed": 0,
+                    "trails_in_progress": 0,
+                    "simulations_completed": 0,
+                    "points": 0,
+                    "level": 1
+                }
             },
             {
                 "id": "3",
                 "name": "Coordenador Teste",
                 "email": "coordenador@unifor.br",
                 "password": "senha123",
-                "role": "coordinator"
+                "role": "coordinator",
+                "progress": {
+                    "trails_completed": 0,
+                    "trails_in_progress": 0,
+                    "simulations_completed": 0,
+                    "points": 0,
+                    "level": 1
+                }
             }
         ]
         with open("data/users.json", "w") as f:
@@ -369,7 +383,7 @@ if st.session_state.authenticated:
         st.markdown("---")
         if st.button("Sair"):
             logout()
-            # Removido st.experimental_rerun() - Usando rerun() em vez disso
+            # Usando rerun() em vez de experimental_rerun()
             st.rerun()
 
 # Página de login
@@ -389,7 +403,7 @@ if not st.session_state.authenticated:
         if st.button("Entrar"):
             if authenticate(email, password):
                 st.session_state.current_page = "dashboard"
-                # Removido st.experimental_rerun() - Usando rerun() em vez disso
+                # Usando rerun() em vez de experimental_rerun()
                 st.rerun()
             else:
                 st.error("Email ou senha incorretos")
@@ -412,6 +426,16 @@ elif st.session_state.current_page == "dashboard":
     
     # Carregar dados do usuário
     user = st.session_state.user
+    
+    # Verificar se o usuário tem o campo progress
+    if "progress" not in user:
+        user["progress"] = {
+            "trails_completed": 0,
+            "trails_in_progress": 0,
+            "simulations_completed": 0,
+            "points": 0,
+            "level": 1
+        }
     
     # Métricas principais
     col1, col2, col3, col4 = st.columns(4)
