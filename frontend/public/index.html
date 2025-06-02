@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adm Academy - Preparação ENADE 2025</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary: #003C71;
+            --secondary: #0088FE;
+            --accent: #00C49F;
+            --background: #f8f9fa;
+            --text: #333;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #002b52;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
+            transform: translateY(-2px);
+        }
+        
+        .card {
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .feature-icon {
+            background-color: rgba(0, 60, 113, 0.1);
+            color: var(--primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+        
+        .nav-link {
+            position: relative;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .active-nav {
+            color: var(--primary);
+        }
+        
+        .active-nav::after {
+            width: 100%;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+        }
+        
+        .testimonial {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+        }
+        
+        .footer-link {
+            color: #ccc;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-link:hover {
+            color: white;
+        }
+        
+        /* Animações */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        .delay-400 { animation-delay: 0.4s; }
+        .delay-500 { animation-delay: 0.5s; }
+    </style>
+</head>
+<body>
+    <!-- Navegação -->
+    <nav class="bg-white shadow-sm py-4 sticky top-0 z-50">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <svg width="40" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                    <path d="M20.5 8H10.5C9.4 8 8.5 8.9 8.5 10V30C8.5 31.1 9.4 32 10.5 32H20.5C21.6 32 22.5 31.1 22.5 30V10C22.5 8.9 21.6 8 20.5 8Z" fill="#003C71"/>
+                    <path d="M38.5 8H28.5C27.4 8 26.5 8.9 26.5 10V30C26.5 31.1 27.4 32 28.5 32H38.5C39.6 32 40.5 31.1 40.5 30V10C40.5 8.9 39.6 8 38.5 8Z" fill="#003C71"/>
+                    <path d="M56.5 8H46.5C45.4 8 44.5 8.9 44.5 10V30C44.5 31.1 45.4 32 46.5 32H56.5C57.6 32 58.5 31.1 58.5 30V10C58.5 8.9 57.6 8 56.5 8Z" fill="#003C71"/>
+                </svg>
+                <span class="text-xl font-bold text-gray-800">Adm Academy</span>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#inicio" class="nav-link active-nav">Início</a>
+                <a href="#recursos" class="nav-link">Recursos</a>
+                <a href="#trilhas" class="nav-link">Trilhas</a>
+                <a href="#depoimentos" class="nav-link">Depoimentos</a>
+                <a href="#contato" class="nav-link">Contato</a>
+            </div>
+            <div>
+                <button class="btn-primary px-6 py-2 rounded-md">Acessar</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="inicio" class="hero-gradient text-white py-20">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0 animate-fade-in">
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4">Prepare-se para o ENADE 2025</h1>
+                    <p class="text-xl mb-8">Uma plataforma completa com trilhas adaptativas, simulados interativos e assistente virtual para maximizar seu desempenho.</p>
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button class="btn-primary px-8 py-3 rounded-md font-medium">Começar Agora</button>
+                        <button class="btn-secondary px-8 py-3 rounded-md font-medium">Saiba Mais</button>
+                    </div>
+                </div>
+                <div class="md:w-1/2 animate-fade-in delay-200">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1471&q=80" alt="Estudantes" class="rounded-lg shadow-lg w-full">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Estatísticas -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="stat-card text-center animate-fade-in">
+                    <div class="text-4xl font-bold text-primary mb-2">95%</div>
+                    <div class="text-gray-600">Taxa de aprovação</div>
+                </div>
+                <div class="stat-card text-center animate-fade-in delay-100">
+                    <div class="text-4xl font-bold text-primary mb-2">1000+</div>
+                    <div class="text-gray-600">Questões no banco</div>
+                </div>
+                <div class="stat-card text-center animate-fade-in delay-200">
+                    <div class="text-4xl font-bold text-primary mb-2">24/7</div>
+                    <div class="text-gray-600">Assistente disponível</div>
+                </div>
+                <div class="stat-card text-center animate-fade-in delay-300">
+                    <div class="text-4xl font-bold text-primary mb-2">50+</div>
+                    <div class="text-gray-600">Trilhas de estudo</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recursos -->
+    <section id="recursos" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-fade-in">
+                <h2 class="text-3xl font-bold mb-4">Recursos Exclusivos</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Nossa plataforma combina tecnologia avançada e metodologias pedagógicas para oferecer a melhor experiência de preparação para o ENADE.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">IA Adaptativa</h3>
+                    <p class="text-gray-600">Algoritmos inteligentes que identificam suas necessidades e personalizam o conteúdo para maximizar seu aprendizado.</p>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-100">
+                    <div class="feature-icon">
+                        <i class="fas fa-trophy text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Gamificação</h3>
+                    <p class="text-gray-600">Sistema de pontos, níveis e conquistas que tornam o processo de estudo mais engajador e motivador.</p>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-200">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Analytics Avançado</h3>
+                    <p class="text-gray-600">Dashboards personalizados que mostram seu progresso e identificam áreas que precisam de mais atenção.</p>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-300">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Assistente Virtual</h3>
+                    <p class="text-gray-600">Tire dúvidas e receba orientações personalizadas a qualquer momento com nosso assistente baseado em IA.</p>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-400">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Simulados Interativos</h3>
+                    <p class="text-gray-600">Pratique com simulados que replicam o formato e o nível de dificuldade do ENADE, com feedback detalhado.</p>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-500">
+                    <div class="feature-icon">
+                        <i class="fas fa-route text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Trilhas Personalizadas</h3>
+                    <p class="text-gray-600">Percursos de estudo que se adaptam ao seu ritmo e estilo de aprendizagem, focando nas suas necessidades.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trilhas de Aprendizado -->
+    <section id="trilhas" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-fade-in">
+                <h2 class="text-3xl font-bold mb-4">Trilhas de Aprendizado</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Percursos estruturados que cobrem todas as competências avaliadas no ENADE de Administração.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card bg-white rounded-lg overflow-hidden shadow-md animate-fade-in">
+                    <div class="h-48 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80')"></div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold">Gestão Estratégica</h3>
+                            <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">Intermediário</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Desenvolva competências em planejamento estratégico, análise de cenários e tomada de decisão.</p>
+                        <div class="flex justify-between text-sm text-gray-500 mb-4">
+                            <span>8 módulos</span>
+                            <span>4h estimadas</span>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progresso</span>
+                                <span>0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary py-2 rounded-md">Iniciar Trilha</button>
+                    </div>
+                </div>
+                
+                <div class="card bg-white rounded-lg overflow-hidden shadow-md animate-fade-in delay-100">
+                    <div class="h-48 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1415&q=80')"></div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold">Finanças Corporativas</h3>
+                            <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">Avançado</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Aprenda sobre análise financeira, investimentos, gestão de riscos e avaliação de empresas.</p>
+                        <div class="flex justify-between text-sm text-gray-500 mb-4">
+                            <span>10 módulos</span>
+                            <span>6h estimadas</span>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progresso</span>
+                                <span>0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary py-2 rounded-md">Iniciar Trilha</button>
+                    </div>
+                </div>
+                
+                <div class="card bg-white rounded-lg overflow-hidden shadow-md animate-fade-in delay-200">
+                    <div class="h-48 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1470&q=80')"></div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-bold">Gestão de Pessoas</h3>
+                            <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded">Iniciante</span>
+                        </div>
+                        <p class="text-gray-600 mb-4">Estude recrutamento e seleção, desenvolvimento de talentos, cultura organizacional e liderança.</p>
+                        <div class="flex justify-between text-sm text-gray-500 mb-4">
+                            <span>7 módulos</span>
+                            <span>3h estimadas</span>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex justify-between text-sm mb-1">
+                                <span>Progresso</span>
+                                <span>0%</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-primary h-2 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <button class="w-full btn-primary py-2 rounded-md">Iniciar Trilha</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <button class="btn-secondary px-8 py-3 rounded-md font-medium">Ver Todas as Trilhas</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simulados -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-fade-in">
+                <h2 class="text-3xl font-bold mb-4">Simulados ENADE</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Pratique com simulados que replicam o formato e o nível de dificuldade da prova oficial.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold">Simulado Diagnóstico</h3>
+                        <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded">60 min</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Avalie seu conhecimento atual e identifique áreas que precisam de mais atenção.</p>
+                    <div class="flex justify-between text-sm text-gray-500 mb-4">
+                        <span>30 questões</span>
+                        <span>Todas as áreas</span>
+                    </div>
+                    <button class="w-full btn-primary py-2 rounded-md">Iniciar Simulado</button>
+                </div>
+                
+                <div class="card bg-white rounded-lg p-8 shadow-md animate-fade-in delay-100">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold">Simulado Completo</h3>
+                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded">4 horas</span>
+                    </div>
+                    <p class="text-gray-600 mb-4">Experimente uma prova completa no formato oficial do ENADE, com tempo controlado.</p>
+                    <div class="flex justify-between text-sm text-gray-500 mb-4">
+                        <span>40 questões</span>
+                        <span>Formação geral e específica</span>
+                    </div>
+                    <button class="w-full btn-primary py-2 rounded-md">Iniciar Simulado</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Depoimentos -->
+    <section id="depoimentos" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-fade-in">
+                <h2 class="text-3xl font-bold mb-4">O Que Dizem Nossos Alunos</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Veja como a Adm Academy tem ajudado estudantes a se prepararem para o ENADE.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="testimonial animate-fade-in">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/32.jpg" alt="Usuário" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-bold">Ana Silva</h4>
+                            <p class="text-gray-600 text-sm">Estudante de Administração</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"A plataforma mudou completamente minha forma de estudar. As trilhas adaptativas identificaram exatamente o que eu precisava melhorar e os simulados me deram confiança para a prova."</p>
+                    <div class="flex mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="testimonial animate-fade-in delay-100">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/men/45.jpg" alt="Usuário" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-bold">Carlos Mendes</h4>
+                            <p class="text-gray-600 text-sm">Formando em Administração</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"O assistente virtual foi um diferencial incrível. Sempre que eu tinha dúvidas, mesmo tarde da noite, conseguia respostas claras e exemplos práticos que me ajudaram muito."</p>
+                    <div class="flex mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+                
+                <div class="testimonial animate-fade-in delay-200">
+                    <div class="flex items-center mb-4">
+                        <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Usuário" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-bold">Juliana Costa</h4>
+                            <p class="text-gray-600 text-sm">Coordenadora de Curso</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-700">"Como coordenadora, os dashboards analíticos me permitiram acompanhar o desempenho dos alunos e intervir onde necessário. Nossos resultados no ENADE melhoraram significativamente."</p>
+                    <div class="flex mt-4 text-yellow-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-20 hero-gradient text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6 animate-fade-in">Pronto para Maximizar seu Desempenho no ENADE?</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto animate-fade-in delay-100">Junte-se a milhares de estudantes que estão se preparando de forma inteligente e eficiente.</p>
+            <button class="btn-secondary bg-white text-primary px-8 py-3 rounded-md font-medium animate-fade-in delay-200">Começar Agora</button>
+        </div>
+    </section>
+
+    <!-- Contato -->
+    <section id="contato" class="py-20 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 animate-fade-in">
+                <h2 class="text-3xl font-bold mb-4">Entre em Contato</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Tem dúvidas ou precisa de ajuda? Nossa equipe está pronta para atender você.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div class="animate-fade-in">
+                    <form>
+                        <div class="mb-6">
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Nome</label>
+                            <input type="text" id="name" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div class="mb-6">
+                            <label for="email" class="block text-gray-700 font-medium mb-2">E-mail</label>
+                            <input type="email" id="email" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div class="mb-6">
+                            <label for="subject" class="block text-gray-700 font-medium mb-2">Assunto</label>
+                            <input type="text" id="subject" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary">
+                        </div>
+                        <div class="mb-6">
+                            <label for="message" class="block text-gray-700 font-medium mb-2">Mensagem</label>
+                            <textarea id="message" rows="5" class="w-full px-4 py-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary px-8 py-3 rounded-md font-medium">Enviar Mensagem</button>
+                    </form>
+                </div>
+                
+                <div class="animate-fade-in delay-100">
+                    <div class="mb-8">
+                        <h3 class="text-xl font-bold mb-4">Informações de Contato</h3>
+                        <div class="flex items-start mb-4">
+                            <div class="text-primary mr-4">
+                                <i class="fas fa-map-marker-alt text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-700">Av. Washington Soares, 1321</p>
+                                <p class="text-gray-700">Fortaleza, CE - Brasil</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start mb-4">
+                            <div class="text-primary mr-4">
+                                <i class="fas fa-envelope text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-700">contato@admacademy.unifor.br</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start mb-4">
+                            <div class="text-primary mr-4">
+                                <i class="fas fa-phone text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-700">(85) 3477-XXXX</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Horário de Atendimento</h3>
+                        <p class="text-gray-700 mb-2">Segunda a Sexta: 8h às 20h</p>
+                        <p class="text-gray-700">Sábado: 8h às 12h</p>
+                    </div>
+                    
+                    <div class="mt-8">
+                        <h3 class="text-xl font-bold mb-4">Siga-nos</h3>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-primary hover:text-secondary transition-colors">
+                                <i class="fab fa-facebook-f text-xl"></i>
+                            </a>
+                            <a href="#" class="text-primary hover:text-secondary transition-colors">
+                                <i class="fab fa-instagram text-xl"></i>
+                            </a>
+                            <a href="#" class="text-primary hover:text-secondary transition-colors">
+                                <i class="fab fa-linkedin-in text-xl"></i>
+                            </a>
+                            <a href="#" class="text-primary hover:text-secondary transition-colors">
+                                <i class="fab fa-youtube text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center mb-4">
+                        <svg width="40" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg" class="mr-2">
+                            <path d="M20.5 8H10.5C9.4 8 8.5 8.9 8.5 10V30C8.5 31.1 9.4 32 10.5 32H20.5C21.6 32 22.5 31.1 22.5 30V10C22.5 8.9 21.6 8 20.5 8Z" fill="white"/>
+                            <path d="M38.5 8H28.5C27.4 8 26.5 8.9 26.5 10V30C26.5 31.1 27.4 32 28.5 32H38.5C39.6 32 40.5 31.1 40.5 30V10C40.5 8.9 39.6 8 38.5 8Z" fill="white"/>
+                            <path d="M56.5 8H46.5C45.4 8 44.5 8.9 44.5 10V30C44.5 31.1 45.4 32 46.5 32H56.5C57.6 32 58.5 31.1 58.5 30V10C58.5 8.9 57.6 8 56.5 8Z" fill="white"/>
+                        </svg>
+                        <span class="text-xl font-bold">Adm Academy</span>
+                    </div>
+                    <p class="text-gray-400">Plataforma de preparação para o ENADE 2025 com tecnologia avançada e metodologias pedagógicas inovadoras.</p>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#inicio" class="footer-link">Início</a></li>
+                        <li><a href="#recursos" class="footer-link">Recursos</a></li>
+                        <li><a href="#trilhas" class="footer-link">Trilhas</a></li>
+                        <li><a href="#depoimentos" class="footer-link">Depoimentos</a></li>
+                        <li><a href="#contato" class="footer-link">Contato</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Recursos</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link">Trilhas de Aprendizado</a></li>
+                        <li><a href="#" class="footer-link">Simulados</a></li>
+                        <li><a href="#" class="footer-link">Assistente Virtual</a></li>
+                        <li><a href="#" class="footer-link">Dashboards</a></li>
+                        <li><a href="#" class="footer-link">Gamificação</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-bold mb-4">Suporte</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="footer-link">Central de Ajuda</a></li>
+                        <li><a href="#" class="footer-link">FAQ</a></li>
+                        <li><a href="#" class="footer-link">Tutoriais</a></li>
+                        <li><a href="#" class="footer-link">Política de Privacidade</a></li>
+                        <li><a href="#" class="footer-link">Termos de Uso</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center">
+                <p class="text-gray-400">&copy; 2025 Adm Academy - Unifor. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Navegação suave
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+                
+                // Atualizar links ativos
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active-nav');
+                });
+                this.classList.add('active-nav');
+            });
+        });
+        
+        // Observador de interseção para animações
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = 1;
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+            el.style.opacity = 0;
+            el.style.transform = 'translateY(20px)';
+            observer.observe(el);
+        });
+        
+        // Navegação ativa no scroll
+        window.addEventListener('scroll', () => {
+            let current = '';
+            const sections = document.querySelectorAll('section');
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - sectionHeight / 3)) {
+                    current = section.getAttribute('id');
+                }
+            });
+            
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active-nav');
+                if (link.getAttribute('href') === `#${current}`) {
+                    link.classList.add('active-nav');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
