@@ -1,11 +1,14 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { resolve } from 'path'
 
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  base: '/adm-academy/', // Base path para GitHub Pages
   build: {
     outDir: 'dist',
-    emptyOutDir: true,
+    assetsDir: 'assets',
+    sourcemap: false,
+    minify: true,
   },
 })
